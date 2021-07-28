@@ -1,0 +1,24 @@
+.app {
+    width: fit-content;
+    height: fit-content;
+    position: relative;
+}
+
+.checkpoint {
+    width: 180px;
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+}
+
+.content {
+    text-align: center;
+}
+
+label {
+    color: #002145;
+    font-size: 12px;
+    border-bottom: 1px solid;
+}

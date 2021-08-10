@@ -6,16 +6,21 @@
 
 .checkpoint {
     width: 180px;
-    height: 130px;
+    height: 210px;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
 
 }
 
+.markers {
+    z-index: 20;
+}
+
 .content {
     text-align: center;
 }
+
 
 label {
     color: #002145;

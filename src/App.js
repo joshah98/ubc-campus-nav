@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactMapGL, {Marker, Popup} from 'react-map-gl';
 import {Room} from "@material-ui/icons";
 import "./app.css";
 import { SearchBar } from './components/Searchbar/SearchBar.js';
+import SummaryTab from './components/SummaryTab/SummaryTab.js';
+import PolylineOverlay from './components/PolylineOverlay/PolylineOverlay';
+import Header from './components/Header/Header';
 import axios from 'axios';
 
 const App = () => {
@@ -13,39 +16,96 @@ const App = () => {
     longitude: -123.2460,
     zoom: 14
   });
+  
+  const [pins, setPins] = useState([]);
+  const [popup, setPopup] = useState(null);
+  const [routes, setRoutes] = useState([]);
 
-  const [pins, addPin] = useState([]);
-  const [markers, addMarker] = useState([]);
+  
+  useEffect(() => {
+    console.log("Length of pins: "+pins.length)
+    if (pins.length > 1) {
+      routeMap();
+    } else if (pins.length === 1) {
+      setRoutes([]);
+    }
 
-  const [showPopup, togglePopup] = useState(true);
+  }, [pins]);
 
-  const addNewMarker = (course, section, building, time) => {
-    let newMarker = {
-      course: course,
-      section: section,
-      building: building,
-      time: time
-    };
+  const routeMap = () => {
+    let coords = "";
+    pins.map(pin => {
+      coords = coords.concat(`;${pin.longitude},${pin.latitude}`);
+      console.log(coords);
+    });
+    coords = coords.substr(1, coords.length);
+    console.log(coords);
 
-    addMarker([...markers, newMarker]);
+    axios.get(`https://api.mapbox.com/directions/v5/mapbox/walking/${coords}?geometries=geojson&access_token=${process.env.REACT_APP_MAP_TOKEN}`)
+      .then(result => setRoutes(result.data.routes[0].geometry.coordinates));
+  };
+
+  const insertNewCourse = (course) => {
+    let oldPins = [...pins];
+    let index = 0;
+    
+    if (oldPins.length === 0) {
+      setPins([course]);
+    }
+    
+    // new start before curr start, new end before curr start => insert, break loop
+    // new start before curr start, new end after curr start => error, course overlap
+    // new start after curr start => increment, continue loop
+    // if index is at length, then insert to back of array
+    
+    while (index < oldPins.length) {
+      let currCourse = oldPins[index];
+      if (Date.parse(`01/01/2000 ${currCourse.start}`) > Date.parse(`01/01/2000 ${course.start}`)) {
+        if (Date.parse(`01/01/2000 ${currCourse.start}`) > Date.parse(`01/01/2000 ${course.end}`)) {
+          oldPins.splice(index, 0, course);
+          setPins(oldPins);
+          
+          break;
+        } else {
+          console.log("ERROR");
+          break;
+        }
+      }
+      
+      index++;
+      
+      if (index === oldPins.length) {
+        oldPins.push(course);
+        setPins(oldPins);
+        break;
+      }
+    }
   };
 
   const addNewPin = (course, section) => {
     axios.get(`https://ubcapi.herokuapp.com/courses/${course}/${section}`)
       .then(result => {
         let building = result.data[0].building;
-        let time = result.data[0].time;
-
-        addNewMarker(course, section, building, time);
+        let start = result.data[0].start;
+        let end = result.data[0].end;
 
         axios.get(`http://api.positionstack.com/v1/forward?access_key=${process.env.REACT_APP_GEOCODE_TOKEN}&query=${building} vancouver`)
           .then(result => {
+            let data = result.data.data.filter(loc => {
+              return loc.neighbourhood === "University of British Columbia";
+            });
+
             let newPin = {
-              latitude: result.data.data[0].latitude,
-              longitude: result.data.data[0].longitude
+              course: course,
+              section: section,
+              building: building,
+              start: start,
+              end: end,
+              latitude: data[0].latitude,
+              longitude: data[0].longitude
             };
 
-            addPin([...pins, newPin]);
+            insertNewCourse(newPin);
           })
       });
 
@@ -53,40 +113,52 @@ const App = () => {
 
   };
 
+  const removeCourse = (course) => {
+    let newCourses = [...pins];
+    const index = newCourses.indexOf(course);
+    if (index > -1) {
+      newCourses.splice(index, 1);
+      setPins(newCourses);
+    }
+  };
+
   return (
     <div className="app">
-      <SearchBar newPin={(course, section) => addNewPin(course, section) }/>        
+      <Header/>
+      <SearchBar newPin={(course, section) => addNewPin(course, section) }/>
+      <SummaryTab courses={pins} remove={(course) => removeCourse(course)}/>
       <ReactMapGL
         {...viewport}
         mapboxApiAccessToken={process.env.REACT_APP_MAP_TOKEN}
         onViewportChange={nextViewport => setViewport(nextViewport)}
         mapStyle="mapbox://styles/joshah/ckrfy2ocs2v4x18lfk22f06cu"
+        onClick={() => {setPopup(null)}}
         >
+
+        <PolylineOverlay points={routes} />
 
         <div className="markers">
           {pins.map((p, i) =>            
-            <Marker latitude={p.latitude} longitude={p.longitude} offsetLeft={-20} offsetTop={-10} key={i}>
-              <Room style={{fontSize: viewport.zoom * 3}}/>
+            <Marker latitude={p.latitude} longitude={p.longitude} offsetLeft={-20} offsetTop={-10} key={i} onClick={() => setPopup(p)}>
+              <Room className="room" style={{fontSize:"40px"}} />
             </Marker>
           )}
         </div>
 
-        {/* {showPopup && <Popup
-          latitude={49.264208}
-          longitude={-123.253054}
-          closeButton={true}
-          closeOnClick={false}
-          onClose={() => togglePopup(false)}
-          anchor="left" >
+        {popup !== null && <Popup
+          className="popup-content"
+          latitude={popup.latitude}
+          longitude={popup.longitude}
+          anchor="bottom" >
           <div className="checkpoint">
-          <label>Course</label>
-          <h4 className="course">CHEM 111 101</h4>
-          <label>Building</label>
-          <h4 className="content">UBC building</h4>
-          <label>Time</label>
-          <p className="content">9:30-10:30</p>
+            <label>Course</label>
+            <h4 className="popupCourse">{popup.course}</h4>
+            <label>Building</label>
+            <h4 className="content">{popup.building}</h4>
+            <label>Time</label>
+            <p className="content">{popup.start} - {popup.end}</p>
           </div>
-        </Popup>} */}
+        </Popup>}
       </ReactMapGL>
     </div>
   );

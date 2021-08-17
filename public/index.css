@@ -1,0 +1,59 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+header{
+    position:relative;
+    left: 0;
+    top:0;
+    width: 100%;
+    height: 80px;
+}
+
+header h4 {
+    position:absolute;
+    left:15%;
+    bottom:1rem;
+}
+
+/* animation */
+.intro {
+    position:fixed;
+    z-index: 11;
+    left:0;
+    top:0;
+    width: 100%;
+    height: 100vh;
+    background-color: #002145;
+    transition: 1s;
+}
+
+.findstuff-header {
+    position:absolute;
+    top:40%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+}
+
+.findstuff {
+    position:relative;
+    display: inline-block;
+    bottom: -20px;
+    opacity: 0;
+}
+
+.findstuff.active{
+    bottom:0;
+    opacity: 1;
+    transition: ease-in-out 0.5s;
+}
+
+.findstuff.fade {
+    bottom: 150px;
+    opacity: 0;
+    transition: ease-in-out 0.5s;
+}

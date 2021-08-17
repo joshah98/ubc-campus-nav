@@ -1,0 +1,75 @@
+.summaryTab {
+    position: fixed;
+    width: 448px;
+    height: 80vh;
+    right: 10%;
+    top: 10%;
+    background-color: #002145;
+    z-index: 10;
+    padding: 12px;
+}
+
+.course {
+    width: 67%;
+    float: left;
+    padding: 20px;
+    border: 2px solid rgb(223, 223, 223);
+    background-color: white;
+    text-align: center;
+}
+
+
+.remove {
+    position: relative;
+    left: 12px;
+    width: 125px;
+    height: 69px;
+    line-height: 15px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    color: tomato;
+}
+
+.remove:hover {
+    background-color: rgb(185, 185, 185);
+    font-weight: bold;
+}
+
+.toggleoff {
+    position:absolute;
+    height: 80px;
+    width: 45px;
+    left: 100%;
+    top: 40%;
+    background-color: #002145;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.toggleon {
+    position:fixed;
+    height: 80px;
+    width: 45px;
+    right: 0%;
+    top: 42.5%;
+    background-color: #002145;
+    z-index: 10;
+    cursor: pointer;
+}
+
+.arrow {
+    fill: white;
+    cursor: pointer;
+    height:2em;
+    width: 2em;
+    z-index: 10;
+    position: relative;
+    top: 30%;
+}
+
+.arrow:hover {
+    height: 2.2em;
+    width: 2.2em;
+    transition: 0.1s linear;
+}

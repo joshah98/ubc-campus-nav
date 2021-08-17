@@ -1,0 +1,33 @@
+.header {
+    position: fixed;
+    width: 100vw;
+    height: 50px;
+    background-color: #002145;
+    z-index: 1;
+    color:white;
+}
+
+.main {
+    position: relative;
+    left: 5%;
+    top:20%;
+    font-weight: bold;
+    font-size: larger;
+}
+
+.sub {
+    position: relative;
+    top:25%;
+    left: 40%;
+}
+
+.subsub {
+    position: relative;
+    top:35%;
+    left: 60%;
+    font-size: 12px;
+}
+
+.title {
+    float:left;
+}

@@ -2,6 +2,11 @@ import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import "./searchbar.css";
 import { Button } from '@material-ui/core';
+import Slide from '@material-ui/core/Slide';
+import { IoIosArrowRoundBack } from "react-icons/io";
+import LoadingMask from "react-loadingmask";
+import "react-loadingmask/dist/react-loadingmask.css";
+
 
 export const SearchBar = props => {
     const [courses, setCourses] = useState([]);
@@ -11,19 +16,35 @@ export const SearchBar = props => {
     const [course, setCourse] = useState('');
     const [section, setSection] = useState('');
     const [error, setError] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
     const dropdownLen = 15;
+
+    const containerStyle = {
+        position:'fixed',
+        top: '25%',
+        left: '10%',
+        zIndex: '10',
+        display: 'inline-block',
+        transition: 'height 0.2s linear',
+        width: '300px',
+        height: `${page === 1 ? `${25*suggestions.length + 100}px` : '305px'}`,
+        padding: '12px',
+        backgroundColor: '#002145',
+        overflow: 'hidden'
+    }
     
     useEffect(() => {
         const loadCourses = async() => {
             axios.get('https://ubcapi.herokuapp.com/courses/codes')
              .then((res) => {
                  setCourses(res.data);
+                 setLoading(false);
                  console.log("data loaded");
              });
         }
         loadCourses();
     }, []);
-
 
     const onSuggestHandler = (text) => {
         let courseCode = text.replace(/\s/g, '');
@@ -37,10 +58,12 @@ export const SearchBar = props => {
             if (result.data.length > 0) {
                 setSections(result.data);
                 setError(false);
+                setPage(2);
             } else {
                 setSections([]);
                 setError(true);
             }
+
         })
         .catch((err) => {
             setSections([]);
@@ -67,59 +90,67 @@ export const SearchBar = props => {
     };
 
     return (
-        <div className='container'>
-            <form onSubmit={(event) => {
-                onSuggestHandler(codeText); 
-                event.preventDefault();}
-                }>
-                <input
-                    type='text' 
-                    onChange={e => courseMatches(e.target.value)}
-                    value={codeText}
-                    onBlur={() => {
-                        setTimeout(() => {setSuggestions([])}, 100);
-                    }}
-                />
-                <input type="submit" value="Find sections"/>
-            </form>
-            {error &&
-                <h1 className='error'>This course code is either invalid or doesn't exist</h1>
+        <div className='container1' style={containerStyle}>
+            {loading &&
+                <LoadingMask className="load" loading={true} text={"loading..."}>
+                </LoadingMask>
             }
-            <ul>
-                {suggestions && suggestions.map((suggestion, i) => 
-                    <li className='dropdown' key={i} onMouseDown={(e) => e.preventDefault()} onClick={() => {onSuggestHandler(suggestion);}}>{suggestion}</li>
-                    )}
-            </ul>
 
-            {/* <input
-                type='text'
-                onChange={e => sectionMatches(e.target.value)}
-                value={sectionText}
-                onBlur={() => {
-                    setTimeout(() => {setSectionSuggestions([])}, 100);
-                }}
-            />
-            <ul>
-                {sectionSuggestions && sectionSuggestions.map((suggestion, i) => 
-                    <li className='dropdown' key={i} onMouseDown={(e) => e.preventDefault()} onClick={() => {onSectionSuggestHandler(suggestion);}}>{suggestion}</li>
-                )}
-            </ul> */}
-            <form onSubmit={(event) => {
-                    event.preventDefault();
-                    props.newPin(course, section);
-                }
-            }>
-                {sections.length > 0 &&
-                    <>            
-                        <div className='sections'>
-                            {sections.map((sec, i) => 
-                                <div className='section' key={i} tabIndex={`${i}`} onClick={() => {selectSection(sec)}}>{sec}</div>
+            <Slide direction="left" in={page === 1 && !loading} timeout={{enter:300, exit:0}} mountOnEnter unmountOnExit>
+                <div>
+                    <form onSubmit={(event) => {
+                        onSuggestHandler(codeText); 
+                        event.preventDefault();}
+                        }>
+                        <input
+                            className="input"
+                            type='text' 
+                            onChange={e => courseMatches(e.target.value)}
+                            value={codeText}
+                            onBlur={() => {
+                                setTimeout(() => {setSuggestions([])}, 100);
+                            }}
+                            />
+                        <button type="submit" className="button findSections">Find Sections</button>
+                    </form>
+                    {error &&
+                        <h1 className='error'>This course code is either invalid or doesn't exist</h1>
+                    }
+                    <div>
+                        {suggestions && suggestions.map((suggestion, i) => 
+                            <div className='dropdown' key={i} onMouseDown={(e) => e.preventDefault()} onClick={() => {onSuggestHandler(suggestion);}}>{suggestion}</div>
                             )}
-                        </div>
-                    </>
-                }
-                <input type="submit" value="Add Course"/>
-            </form>
+                    </div>
+                </div>
+            </ Slide>        
+                
+
+
+            <Slide direction="right" in={page === 2 && !loading} mountOnEnter unmountOnExit>
+                <div>
+                    <IoIosArrowRoundBack className="back" onClick={() => setPage(1)}/>
+                    <form onSubmit={(event) => {
+                            event.preventDefault();
+                            props.newPin(course, section);
+                        }
+                    }>
+                        {sections.length > 0 &&
+                            <>            
+                                <div className='sections'>
+                                    {sections.map((sec, i) => 
+                                        <div className='section' key={i} tabIndex={`${i}`} onClick={() => {selectSection(sec)}}>{sec}</div>
+                                    )}
+                                </div>
+                                <button type="submit" value="Add Course" className="button addCourse">Add Course to Map!</button>
+                            </>
+                        }
+                    </form>
+                </div>
+            </ Slide>
+            
+
+            
+
             
         </div>
     )

@@ -1,6 +1,6 @@
 .summaryTab {
     position: fixed;
-    width: 448px;
+    width: 460px;
     height: 80vh;
     right: 10%;
     top: 10%;
@@ -10,10 +10,12 @@
 }
 
 .course {
-    width: 67%;
+    position: relative;
+    top: 10px;
+    width: 69.5%;
     float: left;
     padding: 20px;
-    border: 2px solid rgb(223, 223, 223);
+    border: 2px solid #002145;
     background-color: white;
     text-align: center;
 }
@@ -21,7 +23,7 @@
 
 .remove {
     position: relative;
-    left: 12px;
+    left: 0px;
     width: 125px;
     height: 69px;
     line-height: 15px;
@@ -32,8 +34,8 @@
 }
 
 .remove:hover {
-    background-color: rgb(185, 185, 185);
-    font-weight: bold;
+    background-color: rgb(253, 209, 209);
+    transition: 0.5s;
 }
 
 .toggleoff {
@@ -65,6 +67,7 @@
     width: 2em;
     z-index: 10;
     position: relative;
+    left: 15%;
     top: 30%;
 }
 
@@ -72,4 +75,28 @@
     height: 2.2em;
     width: 2.2em;
     transition: 0.1s linear;
+}
+
+.filler {
+    position: relative;
+    top: 10px;
+    width: 98.5%;
+    float: left;
+    padding: 8px;
+    border: 2px solid #002145;
+    background-color: white;
+    text-align: center;
+    cursor: pointer;
+}
+
+.filler:hover {
+    background-color: rgb(172, 194, 255);
+    transition: 0.5s;
+}
+
+.emptyText {
+    position: relative;
+    top: 42.5%;
+    color: white;
+    text-align: center;
 }

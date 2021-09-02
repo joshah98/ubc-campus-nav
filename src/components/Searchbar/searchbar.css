@@ -34,11 +34,11 @@
     
     background-color: white; 
     color: black; 
-    border: 2px solid #4CAF50;
+    border: 2px solid rgb(172, 170, 170);
 }
 
 .findSections:hover {
-    background-color: #4CAF50;
+    background-color: #002145;
     color: white;
   }
 
@@ -87,11 +87,11 @@
     
     background-color: white; 
     color: black; 
-    border: 2px solid #4CAF50;
+    border: 2px solid rgb(172, 170, 170);
 }
 
 .addCourse:hover {
-    background-color: #4CAF50;
+    background-color: #002145;
     color: white;
   }
 

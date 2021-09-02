@@ -8,6 +8,17 @@ import PolylineOverlay from './components/PolylineOverlay/PolylineOverlay';
 import Header from './components/Header/Header';
 import axios from 'axios';
 
+const containsObject = (obj, list) => {
+
+  for (let i = 0; i < list.length; i++) {
+      if (list[i] === obj) {
+          return true;
+      }
+  }
+
+  return false;
+}
+
 const App = () => {
   const [viewport, setViewport] = useState({
     width: "100vw",
@@ -23,7 +34,6 @@ const App = () => {
 
   
   useEffect(() => {
-    console.log("Length of pins: "+pins.length)
     if (pins.length > 1) {
       routeMap();
     } else if (pins.length === 1) {
@@ -34,19 +44,60 @@ const App = () => {
 
   const routeMap = () => {
     let coords = "";
-    pins.map(pin => {
+    pins.filter(p => p.show === true).map(pin => {
       coords = coords.concat(`;${pin.longitude},${pin.latitude}`);
-      console.log(coords);
     });
     coords = coords.substr(1, coords.length);
-    console.log(coords);
 
     axios.get(`https://api.mapbox.com/directions/v5/mapbox/walking/${coords}?geometries=geojson&access_token=${process.env.REACT_APP_MAP_TOKEN}`)
       .then(result => setRoutes(result.data.routes[0].geometry.coordinates));
   };
 
+
+
+  const addFillers = (oldPins) => {
+    if (oldPins.length > 0) {
+      let pinsFilled = [...oldPins];
+      let fillers = [];
+      const n = oldPins.length;
+      
+      for (let i = 0; i < n - 1; i++) {
+        let currEnd = oldPins[i].end;
+        let nextStart = oldPins[i+1].start;
+  
+        if (currEnd !== nextStart) {
+          console.log(`Filler between ${currEnd} and ${nextStart}`);
+          let filler = {
+            course: "Empty block",
+            section: "",
+            building: "",
+            start: currEnd,
+            end: nextStart,
+            latitude: null,
+            longitude: null,
+            show: false,
+            index: i + 1 + fillers.length, // This accounts for the changing size of the pin array after adding fillers
+            prevCourseBuilding: oldPins[i].building
+          }
+  
+          fillers.push(filler);
+  
+        }
+      }
+  
+      for (const f of fillers) {
+        pinsFilled.splice(f.index, 0, f);
+      }
+  
+      setPins(pinsFilled);
+    }
+  };
+
+
+
+
   const insertNewCourse = (course) => {
-    let oldPins = [...pins];
+    let oldPins = pins.filter(p => p.show === true);
     let index = 0;
     
     if (oldPins.length === 0) {
@@ -80,7 +131,12 @@ const App = () => {
         break;
       }
     }
+
+    addFillers(oldPins);
   };
+  
+
+
 
   const addNewPin = (course, section) => {
     axios.get(`https://ubcapi.herokuapp.com/courses/${course}/${section}`)
@@ -102,10 +158,15 @@ const App = () => {
               start: start,
               end: end,
               latitude: data[0].latitude,
-              longitude: data[0].longitude
+              longitude: data[0].longitude,
+              show: true,
+              index: null,
+              prevCourseBuilding: null
             };
-
-            insertNewCourse(newPin);
+            
+            if (!containsObject(newPin, pins)) {
+              insertNewCourse(newPin);
+            }
           })
       });
 
@@ -114,11 +175,16 @@ const App = () => {
   };
 
   const removeCourse = (course) => {
-    let newCourses = [...pins];
+    let newCourses = pins.filter(p => p.show === true);
     const index = newCourses.indexOf(course);
     if (index > -1) {
       newCourses.splice(index, 1);
-      setPins(newCourses);
+
+      if (newCourses.length === 0) {
+        setPins([]);
+      } else {
+        addFillers(newCourses);
+      }
     }
   };
 
@@ -138,7 +204,7 @@ const App = () => {
         <PolylineOverlay points={routes} />
 
         <div className="markers">
-          {pins.map((p, i) =>            
+          {pins.filter(p => p.show === true).map((p, i) =>
             <Marker latitude={p.latitude} longitude={p.longitude} offsetLeft={-20} offsetTop={-10} key={i} onClick={() => setPopup(p)}>
               <Room className="room" style={{fontSize:"40px"}} />
             </Marker>

@@ -7,6 +7,7 @@
     background-color: #002145;
     z-index: 10;
     padding: 12px;
+    overflow: hidden;
 }
 
 .course {
@@ -39,10 +40,10 @@
 }
 
 .toggleoff {
-    position:absolute;
+    position:fixed;
     height: 80px;
     width: 45px;
-    left: 100%;
+    left: 90%;
     top: 40%;
     background-color: #002145;
     z-index: 10;
@@ -68,6 +69,16 @@
     z-index: 10;
     position: relative;
     left: 15%;
+    top: 30%;
+}
+
+.back {
+    fill: white;
+    cursor: pointer;
+    height:2em;
+    width: 2em;
+    z-index: 10;
+    position: relative;
     top: 30%;
 }
 
@@ -99,4 +110,8 @@
     top: 42.5%;
     color: white;
     text-align: center;
+}
+
+.locations {
+    color: white;
 }
